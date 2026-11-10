@@ -2,677 +2,995 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#07111f">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>HWTA DRIFT</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation}
-html,body{width:100%;height:100%;overflow:hidden;background:#07111f;color:white;font-family:Arial}
-#game{position:relative;width:100%;height:100%;overflow:hidden}
-canvas{width:100%;height:100%;display:block}
-#hud{position:absolute;top:10px;right:10px;left:10px;display:flex;justify-content:space-between;gap:5px;pointer-events:none}
-.info{background:#07111fe8;border:1px solid #ffffff30;border-radius:10px;padding:8px;text-align:center;min-width:65px}
-.info small{display:block;color:#aabbd0;font-size:10px}
-.info b{font-size:16px}
-#controls{position:absolute;bottom:15px;left:15px;right:15px;display:flex;justify-content:space-between;align-items:end}
-.group{display:flex;gap:10px}
-.ctrl{width:65px;height:65px;border-radius:50%;border:2px solid #ffffff70;background:#07111fd9;color:white;font-size:24px;font-weight:bold}
-.ctrl:active{background:#087da0}
-.gas{background:#07865f}
-.brake{background:#a93442}
-#overlay{position:absolute;inset:0;background:#06101bf2;display:grid;place-items:center;padding:15px}
-.panel{width:min(95%,420px);background:linear-gradient(150deg,#19334c,#0b1728);border:1px solid #ffffff30;border-radius:20px;padding:22px;text-align:center}
-.logo{font-size:42px;font-weight:1000}
-.logo span{color:#20d7ff}
-.sub{color:#b5c8dc;line-height:1.7;margin:12px 0}
-.stats{display:flex;gap:8px;margin:15px 0}
-.stat{flex:1;background:#071522;border-radius:12px;padding:12px 4px}
-.stat small{display:block;color:#9eb4c9;font-size:11px}
-.stat b{font-size:19px}
-button{cursor:pointer}
-.primary,.secondary{width:100%;padding:14px;border:0;border-radius:12px;margin-top:9px;font-size:17px;font-weight:bold}
-.primary{background:#20d7ff;color:#04131d}
-.secondary{background:#263f59;color:white}
-.carChoices{display:flex;justify-content:center;gap:8px;margin:14px 0}
-.carChoice{padding:10px;border-radius:10px;border:1px solid #ffffff30;background:#20364c;color:white}
-.carChoice.active{border:2px solid #20d7ff}
-.hidden{display:none!important}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+}
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#07111d;
+    font-family:Arial,sans-serif;
+    color:white;
+    touch-action:none;
+}
+#game{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+}
+#hud{
+    position:fixed;
+    top:12px;
+    left:12px;
+    right:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    pointer-events:none;
+    z-index:5;
+}
+.hud-box{
+    background:rgba(4,12,22,.78);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:12px;
+    padding:9px 13px;
+    min-width:90px;
+    text-align:center;
+    box-shadow:0 5px 18px #0005;
+}
+.hud-label{
+    font-size:11px;
+    color:#9eb3c8;
+}
+.hud-value{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:3px;
+}
+#controls{
+    position:fixed;
+    bottom:15px;
+    left:0;
+    right:0;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding:0 16px;
+    z-index:8;
+    pointer-events:none;
+}
+.control-group{
+    display:flex;
+    gap:10px;
+    pointer-events:auto;
+}
+.ctrl{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    border:1px solid #ffffff40;
+    background:rgba(8,20,35,.78);
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow:0 5px 15px #0007;
+    touch-action:none;
+}
+.ctrl:active,.ctrl.active{
+    background:#00b8ff;
+    transform:scale(.94);
+}
+.ctrl.gas{
+    background:rgba(0,160,100,.85);
+}
+.ctrl.brake{
+    background:rgba(190,50,50,.85);
+}
+#overlay{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg,rgba(3,10,20,.94),rgba(7,25,43,.91));
+    z-index:20;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:15px;
+}
+.panel{
+    width:min(430px,94vw);
+    max-height:94vh;
+    overflow:auto;
+    text-align:center;
+    background:linear-gradient(160deg,#142b43,#081522);
+    border:1px solid #ffffff25;
+    border-radius:22px;
+    padding:25px 20px;
+    box-shadow:0 15px 60px #0009;
+}
+.logo{
+    font-size:42px;
+    font-weight:1000;
+    letter-spacing:2px;
+    color:#00d4ff;
+    text-shadow:0 0 22px #00bfff77;
+}
+.subtitle{
+    color:#a9bed1;
+    margin:7px 0 20px;
+    font-size:13px;
+}
+.car-preview{
+    width:110px;
+    height:155px;
+    margin:10px auto 18px;
+    position:relative;
+}
+.preview-car{
+    position:absolute;
+    inset:12px 17px;
+    border-radius:23px 23px 15px 15px;
+    background:var(--car-color,#e53935);
+    border:3px solid #ffffffa0;
+    box-shadow:0 0 25px var(--car-color,#e53935);
+}
+.preview-car:before{
+    content:"";
+    position:absolute;
+    top:25px;
+    left:12px;
+    right:12px;
+    height:48px;
+    background:#152e43;
+    border-radius:12px;
+    border:2px solid #ffffff70;
+}
+.preview-car:after{
+    content:"";
+    position:absolute;
+    bottom:13px;
+    left:10px;
+    right:10px;
+    height:15px;
+    background:#ffffff55;
+    border-radius:5px;
+}
+.car-name{
+    font-weight:bold;
+    font-size:18px;
+    margin-bottom:12px;
+}
+button{
+    font-family:inherit;
+    cursor:pointer;
+}
+.menu-btn{
+    width:100%;
+    border:0;
+    border-radius:13px;
+    padding:14px;
+    margin-top:10px;
+    font-size:17px;
+    font-weight:bold;
+    color:#06111c;
+    background:linear-gradient(90deg,#00d4ff,#00a9df);
+}
+.menu-btn.secondary{
+    background:#ffffff16;
+    color:white;
+    border:1px solid #ffffff25;
+}
+.menu-btn:active{
+    transform:scale(.98);
+}
+.stats{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin:12px 0;
+}
+.stat{
+    background:#ffffff10;
+    border-radius:10px;
+    padding:10px 16px;
+    min-width:100px;
+}
+.stat small{
+    display:block;
+    color:#a9bed1;
+    margin-bottom:5px;
+}
+.stat strong{
+    font-size:19px;
+}
+#pauseBtn{
+    position:fixed;
+    top:85px;
+    right:12px;
+    z-index:9;
+    width:42px;
+    height:42px;
+    border:1px solid #ffffff55;
+    border-radius:12px;
+    background:#071522cc;
+    color:white;
+    font-size:20px;
+}
+.hidden{
+    display:none!important;
+}
+#message{
+    position:fixed;
+    top:25%;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    background:#071522dd;
+    border:1px solid #ffffff35;
+    border-radius:12px;
+    padding:10px 18px;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .2s;
+}
+@media (max-height:500px){
+    .panel{padding:13px 18px;max-height:96vh}
+    .logo{font-size:30px}
+    .car-preview{height:90px;margin:3px auto}
+    .preview-car{inset:5px 25px}
+    .subtitle{margin:4px 0 8px}
+    .menu-btn{padding:10px;margin-top:6px}
+    .ctrl{width:55px;height:55px}
+}
 </style>
 </head>
 
 <body>
-<div id="game">
 
-<canvas id="screen"></canvas>
+<canvas id="game"></canvas>
 
 <div id="hud" class="hidden">
- <div class="info"><small>النقاط</small><b id="score">0</b></div>
- <div class="info"><small>العملات</small><b id="coins">0</b></div>
- <div class="info"><small>السرعة</small><b id="speed">0</b></div>
- <div class="info"><small>الأفضل</small><b id="best">0</b></div>
+    <div class="hud-box">
+        <div class="hud-label">النقاط</div>
+        <div class="hud-value" id="score">0</div>
+    </div>
+    <div class="hud-box">
+        <div class="hud-label">السرعة</div>
+        <div class="hud-value"><span id="speed">0</span></div>
+    </div>
+    <div class="hud-box">
+        <div class="hud-label">العملات</div>
+        <div class="hud-value">🪙 <span id="coins">0</span></div>
+    </div>
 </div>
+
+<button id="pauseBtn" class="hidden" aria-label="إيقاف مؤقت">Ⅱ</button>
 
 <div id="controls" class="hidden">
- <div class="group">
-  <button class="ctrl" id="left">◀</button>
-  <button class="ctrl" id="right">▶</button>
- </div>
- <div class="group">
-  <button class="ctrl brake" id="brake">▼</button>
-  <button class="ctrl gas" id="gas">▲</button>
- </div>
+    <div class="control-group">
+        <button class="ctrl" id="leftBtn">◀</button>
+        <button class="ctrl" id="rightBtn">▶</button>
+    </div>
+    <div class="control-group">
+        <button class="ctrl brake" id="brakeBtn">▼</button>
+        <button class="ctrl gas" id="gasBtn">▲</button>
+    </div>
 </div>
+
+<div id="message"></div>
 
 <div id="overlay">
+    <div class="panel" id="mainPanel">
+        <div class="logo">HWTA DRIFT</div>
+        <div class="subtitle">تحدَّ الطريق واصنع أفضل نتيجة!</div>
 
-<div class="panel" id="menu">
- <div class="logo">HWTA <span>DRIFT</span></div>
- <p class="sub">انطلق بسرعة، تفادَ السيارات واجمع العملات!</p>
+        <div class="car-preview">
+            <div class="preview-car" id="previewCar"></div>
+        </div>
 
- <div class="stats">
-  <div class="stat"><small>أفضل نتيجة</small><b id="menuBest">0</b></div>
-  <div class="stat"><small>رصيدك</small><b id="menuCoins">0</b></div>
- </div>
+        <div class="car-name" id="carName">RED FURY</div>
 
- <h3>اختر سيارتك</h3>
+        <button class="menu-btn secondary" id="changeCar">تغيير السيارة ◀</button>
 
- <div class="carChoices">
-  <button class="carChoice active" data-car="0">🔵 رياضية</button>
-  <button class="carChoice" data-car="1">🔴 GT</button>
-  <button class="carChoice" data-car="2">🟡 Turbo</button>
- </div>
+        <div class="stats">
+            <div class="stat">
+                <small>أفضل نتيجة</small>
+                <strong id="bestScore">0</strong>
+            </div>
+            <div class="stat">
+                <small>رصيد العملات</small>
+                <strong id="bankCoins">0</strong>
+            </div>
+        </div>
 
- <button class="primary" id="start">ابدأ السباق</button>
- <p class="sub">تحكم بالأسهم أو أزرار الشاشة.</p>
-</div>
+        <button class="menu-btn" id="startBtn">🏁 ابدأ السباق</button>
+        <div class="subtitle" style="margin-top:15px">استخدم الأزرار للتحكم بسيارتك وتجنب السيارات الأخرى.</div>
+    </div>
 
-<div class="panel hidden" id="pause">
- <div class="logo">توقف مؤقت</div>
- <button class="primary" id="resume">متابعة</button>
- <button class="secondary" id="restart">إعادة السباق</button>
- <button class="secondary" id="home">القائمة الرئيسية</button>
-</div>
+    <div class="panel hidden" id="pausePanel">
+        <div class="logo" style="font-size:32px">إيقاف مؤقت</div>
+        <div class="subtitle">السباق متوقف مؤقتاً</div>
+        <button class="menu-btn" id="resumeBtn">متابعة السباق</button>
+        <button class="menu-btn secondary" id="quitBtn">العودة للقائمة</button>
+    </div>
 
-<div class="panel hidden" id="over">
- <div class="logo">انتهى السباق</div>
- <p class="sub">أحسنت! هذه نتائجك.</p>
+    <div class="panel hidden" id="overPanel">
+        <div class="logo" style="font-size:34px;color:#ff5656">انتهى السباق!</div>
+        <div class="subtitle">اصطدمت بسيارة أخرى</div>
 
- <div class="stats">
-  <div class="stat"><small>النقاط</small><b id="finalScore">0</b></div>
-  <div class="stat"><small>العملات</small><b id="finalCoins">0</b></div>
-  <div class="stat"><small>أفضل نتيجة</small><b id="finalBest">0</b></div>
- </div>
+        <div class="stats">
+            <div class="stat">
+                <small>نتيجتك</small>
+                <strong id="finalScore">0</strong>
+            </div>
+            <div class="stat">
+                <small>العملات المجموعة</small>
+                <strong id="finalCoins">0</strong>
+            </div>
+        </div>
 
- <button class="primary" id="again">العب مجدداً</button>
- <button class="secondary" id="mainMenu">القائمة الرئيسية</button>
-</div>
-
-</div>
+        <button class="menu-btn" id="restartBtn">🔄 العب مرة أخرى</button>
+        <button class="menu-btn secondary" id="homeBtn">القائمة الرئيسية</button>
+    </div>
 </div>
 
 <script>
 "use strict";
 
-const canvas=document.getElementById("screen");
-const ctx=canvas.getContext("2d");
+/* =========================
+   إعداد اللعبة
+========================= */
 
-const $=id=>document.getElementById(id);
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-let W=0,H=0,dpr=1;
-let state="menu";
-let selectedCar=0;
-let lastTime=0;
-let roadOffset=0;
-let spawnTimer=0;
-let coinTimer=0;
+const $ = id => document.getElementById(id);
 
-let best=Number(localStorage.getItem("hwtaBest")||0);
-let bank=Number(localStorage.getItem("hwtaCoins")||0);
+let W = 0;
+let H = 0;
+let dpr = 1;
 
-const carColors=["#19c9ff","#ff4e58","#ffd447"];
+const cars = [
+    {name:"RED FURY",color:"#e53935"},
+    {name:"BLUE STORM",color:"#168cff"},
+    {name:"GOLD VIPER",color:"#f5b82e"},
+    {name:"GREEN BEAST",color:"#20c77a"},
+    {name:"PURPLE X",color:"#a56bff"}
+];
 
-const keys={
- left:false,
- right:false,
- gas:false,
- brake:false
+let selectedCar = 0;
+let best = Number(localStorage.getItem("hwta_best") || 0);
+let bank = Number(localStorage.getItem("hwta_bank") || 0);
+
+let state = "menu";
+let animationId = 0;
+let lastTime = 0;
+
+let score = 0;
+let runCoins = 0;
+let speed = 0;
+let roadOffset = 0;
+let spawnTimer = 0;
+let coinTimer = 0;
+let traffic = [];
+let pickups = [];
+
+const input = {
+    left:false,
+    right:false,
+    gas:false,
+    brake:false
 };
 
-const game={
- x:0,
- y:0,
- w:42,
- h:70,
- speed:0,
- score:0,
- coins:0,
- distance:0,
- traffic:[],
- pickups:[],
- shake:0
+let player = {
+    x:0,
+    y:0,
+    width:42,
+    height:76,
+    tilt:0
+};
+
+const road = {
+    x:0,
+    width:0,
+    laneWidth:0
 };
 
 function resize(){
+    const rect = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
 
- const rect=$("game").getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
 
- W=rect.width;
- H=rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
 
- dpr=Math.min(devicePixelRatio||1,2);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
 
- canvas.width=W*dpr;
- canvas.height=H*dpr;
+    road.width = Math.min(W * 0.76, 470);
+    road.x = (W - road.width) / 2;
+    road.laneWidth = road.width / 3;
 
- ctx.setTransform(dpr,0,0,dpr,0,0);
+    player.width = Math.max(34, Math.min(45, W * 0.105));
+    player.height = player.width * 1.78;
 
- game.w=Math.max(35,Math.min(55,W*.105));
- game.h=game.w*1.65;
+    player.x = Math.max(
+        road.x + player.width / 2 + 10,
+        Math.min(player.x || W/2, road.x + road.width - player.width/2 - 10)
+    );
 
- game.x=W/2;
- game.y=H*.76;
+    player.y = H * 0.76;
 }
 
-window.addEventListener("resize",resize);
+window.addEventListener("resize", resize);
 resize();
 
-function showPanel(id){
+/* =========================
+   التخزين والواجهات
+========================= */
 
- ["menu","pause","over"].forEach(name=>{
-  $(name).classList.toggle("hidden",name!==id);
- });
-
- $("overlay").classList.remove("hidden");
+function updateMenuStats(){
+    $("bestScore").textContent = best;
+    $("bankCoins").textContent = bank;
+    $("carName").textContent = cars[selectedCar].name;
+    $("previewCar").style.setProperty("--car-color",cars[selectedCar].color);
 }
 
-function hidePanel(){
- $("overlay").classList.add("hidden");
+function showPanel(name){
+    $("mainPanel").classList.add("hidden");
+    $("pausePanel").classList.add("hidden");
+    $("overPanel").classList.add("hidden");
+    $(name).classList.remove("hidden");
+    $("overlay").classList.remove("hidden");
 }
 
-function updateMenu(){
-
- $("menuBest").textContent=best;
- $("menuCoins").textContent=bank;
- $("best").textContent=best;
+function hideOverlay(){
+    $("overlay").classList.add("hidden");
 }
 
-function startGame(){
-
- game.x=W/2;
- game.y=H*.76;
- game.speed=0;
- game.score=0;
- game.coins=0;
- game.distance=0;
- game.traffic=[];
- game.pickups=[];
-
- roadOffset=0;
- spawnTimer=0;
- coinTimer=0;
-
- Object.keys(keys).forEach(k=>keys[k]=false);
-
- $("hud").classList.remove("hidden");
- $("controls").classList.remove("hidden");
-
- state="playing";
-
- hidePanel();
- updateHUD();
-
- lastTime=performance.now();
-
- if(!raf) raf=requestAnimationFrame(loop);
+function showMessage(text){
+    const el = $("message");
+    el.textContent = text;
+    el.style.opacity = "1";
+    clearTimeout(showMessage.timer);
+    showMessage.timer = setTimeout(()=>el.style.opacity="0",1100);
 }
 
-let raf=0;
-
-function road(){
-
- const roadWidth=Math.min(W*.76,460);
- const left=(W-roadWidth)/2;
- const right=left+roadWidth;
-
- ctx.fillStyle="#17452f";
- ctx.fillRect(0,0,W,H);
-
- ctx.fillStyle="#30343a";
- ctx.fillRect(left,0,roadWidth,H);
-
- ctx.fillStyle="#d7d7d7";
- ctx.fillRect(left,0,5,H);
- ctx.fillRect(right-5,0,5,H);
-
- ctx.fillStyle="#e6d34d";
-
- const dash=38;
- const gap=32;
-
- for(let lane=1;lane<=2;lane++){
-
-  let x=left+roadWidth*lane/3-2;
-
-  for(let y=-dash+(roadOffset%(dash+gap));y<H;y+=dash+gap){
-
-   ctx.fillRect(x,y,4,dash);
-  }
- }
-
- ctx.fillStyle="#23563a";
-
- for(let y=0;y<H;y+=90){
-
-  ctx.fillRect(left-35,y+roadOffset%90,20,35);
-  ctx.fillRect(right+15,y+roadOffset%90,20,35);
- }
-}
-
-function drawCar(x,y,color,w,h,player=false){
-
- ctx.save();
- ctx.translate(x,y);
-
- // ظل السيارة
- ctx.fillStyle="#0007";
- ctx.beginPath();
- ctx.ellipse(3,5,w*.65,h*.48,0,0,Math.PI*2);
- ctx.fill();
-
- // العجلات
- ctx.fillStyle="#111";
-
- ctx.fillRect(-w*.55,-h*.34,w*.18,h*.27);
- ctx.fillRect(w*.37,-h*.34,w*.18,h*.27);
-
- ctx.fillRect(-w*.55,h*.18,w*.18,h*.27);
- ctx.fillRect(w*.37,h*.18,w*.18,h*.27);
-
- // جسم السيارة
- ctx.fillStyle=color;
- ctx.beginPath();
- ctx.roundRect(-w/2,-h/2,w,h,9);
- ctx.fill();
-
- // الزجاج
- ctx.fillStyle="#172f45";
- ctx.beginPath();
- ctx.roundRect(-w*.34,-h*.25,w*.68,h*.30,6);
- ctx.fill();
-
- ctx.fillStyle="#345b72";
- ctx.fillRect(-w*.30,h*.12,w*.60,h*.13);
-
- // المصابيح
- ctx.fillStyle=player?"#aaf5ff":"#ffefad";
- ctx.fillRect(-w*.37,-h*.48,w*.23,5);
- ctx.fillRect(w*.14,-h*.48,w*.23,5);
-
- ctx.fillStyle="#ff3030";
- ctx.fillRect(-w*.37,h*.42,w*.23,5);
- ctx.fillRect(w*.14,h*.42,w*.23,5);
-
- ctx.restore();
-}
-
-function drawCoin(c){
-
- ctx.save();
-
- ctx.translate(c.x,c.y);
-
- ctx.fillStyle="#ffd447";
- ctx.beginPath();
- ctx.arc(0,0,12,0,Math.PI*2);
- ctx.fill();
-
- ctx.fillStyle="#a86b00";
- ctx.font="bold 15px Arial";
- ctx.textAlign="center";
- ctx.textBaseline="middle";
- ctx.fillText("$",0,1);
-
- ctx.restore();
-}
-
-function spawnTraffic(){
-
- const roadWidth=Math.min(W*.76,460);
- const left=(W-roadWidth)/2;
-
- const lane=Math.floor(Math.random()*3);
-
- const x=left+roadWidth*(lane+.5)/3;
-
- const colors=["#e74c3c","#f0a22e","#8e65d7","#e9e9e9","#24a879"];
-
- game.traffic.push({
-  x:x,
-  y:-100,
-  color:colors[Math.floor(Math.random()*colors.length)],
-  w:game.w*.95,
-  h:game.h*1.05,
-  speed:Math.random()*100+50
- });
-}
-
-function spawnCoin(){
-
- const roadWidth=Math.min(W*.76,460);
- const left=(W-roadWidth)/2;
-
- const lane=Math.floor(Math.random()*3);
-
- game.pickups.push({
-  x:left+roadWidth*(lane+.5)/3,
-  y:-30
- });
-}
-
-function movePlayer(dt){
-
- const acceleration=keys.gas?300:150;
-
- game.speed+=acceleration*dt;
-
- if(keys.brake){
-  game.speed-=450*dt;
- }
-
- game.speed=Math.max(0,Math.min(330,game.speed));
-
- let move=0;
-
- if(keys.left)move=-1;
- if(keys.right)move=1;
-
- game.x+=move*(280+game.speed*.45)*dt;
-
- const roadWidth=Math.min(W*.76,460);
- const left=(W-roadWidth)/2;
-
- game.x=Math.max(
-  left+game.w*.7,
-  Math.min(left+roadWidth-game.w*.7,game.x)
- );
-
-}
-
-function collision(a,b){
-
- return Math.abs(a.x-b.x)<(a.w+b.w)*.42 &&
-        Math.abs(a.y-b.y)<(a.h+b.h)*.40;
-}
-
-function endGame(){
-
- state="over";
-
- bank+=game.coins;
-
- best=Math.max(best,Math.floor(game.score));
-
- localStorage.setItem("hwtaBest",best);
- localStorage.setItem("hwtaCoins",bank);
-
- $("finalScore").textContent=Math.floor(game.score);
- $("finalCoins").textContent=game.coins;
- $("finalBest").textContent=best;
-
- $("hud").classList.add("hidden");
- $("controls").classList.add("hidden");
-
- updateMenu();
- showPanel("over");
+function clearInput(){
+    for(const key in input) input[key] = false;
+    document.querySelectorAll(".ctrl").forEach(b=>b.classList.remove("active"));
 }
 
 function updateHUD(){
-
- $("score").textContent=Math.floor(game.score);
- $("coins").textContent=game.coins;
- $("speed").textContent=Math.floor(game.speed*.45);
- $("best").textContent=best;
+    $("score").textContent = Math.floor(score);
+    $("speed").textContent = Math.round(speed);
+    $("coins").textContent = runCoins;
 }
 
-function update(dt){
+/* =========================
+   بدء وإيقاف السباق
+========================= */
 
- if(state!=="playing")return;
+function startGame(){
+    if(state === "playing") return;
 
- movePlayer(dt);
+    score = 0;
+    runCoins = 0;
+    speed = 35;
+    roadOffset = 0;
+    spawnTimer = 0.5;
+    coinTimer = 1.5;
+    traffic = [];
+    pickups = [];
 
- roadOffset+=game.speed*dt*.75;
+    player.x = W / 2;
+    player.y = H * 0.76;
+    player.tilt = 0;
 
- game.distance+=game.speed*dt;
- game.score+=game.speed*dt*.12;
+    clearInput();
 
- spawnTimer+=dt;
- coinTimer+=dt;
+    state = "playing";
 
- if(spawnTimer>Math.max(.48,1.4-game.speed/450)){
+    $("hud").classList.remove("hidden");
+    $("controls").classList.remove("hidden");
+    $("pauseBtn").classList.remove("hidden");
 
-  spawnTraffic();
-  spawnTimer=0;
- }
+    hideOverlay();
+    updateHUD();
 
- if(coinTimer>1.3){
+    lastTime = performance.now();
 
-  spawnCoin();
-  coinTimer=0;
- }
-
- for(let i=game.traffic.length-1;i>=0;i--){
-
-  const car=game.traffic[i];
-
-  car.y+=(game.speed+car.speed)*dt;
-
-  if(collision(
-   {x:game.x,y:game.y,w:game.w,h:game.h},
-   car
-  )){
-
-   endGame();
-   return;
-  }
-
-  if(car.y>H+100){
-
-   game.traffic.splice(i,1);
-   game.score+=20;
-  }
- }
-
- for(let i=game.pickups.length-1;i>=0;i--){
-
-  const coin=game.pickups[i];
-
-  coin.y+=(game.speed+70)*dt;
-
-  if(Math.abs(coin.x-game.x)<game.w*.65 &&
-     Math.abs(coin.y-game.y)<game.h*.65){
-
-   game.coins++;
-   game.score+=50;
-
-   game.pickups.splice(i,1);
-   continue;
-  }
-
-  if(coin.y>H+30){
-
-   game.pickups.splice(i,1);
-  }
- }
-
- updateHUD();
-}
-
-function draw(){
-
- ctx.clearRect(0,0,W,H);
-
- road();
-
- game.traffic.forEach(car=>{
-  drawCar(car.x,car.y,car.color,car.w,car.h);
- });
-
- game.pickups.forEach(drawCoin);
-
- if(state==="playing"||state==="paused"){
-
-  drawCar(
-   game.x,
-   game.y,
-   carColors[selectedCar],
-   game.w,
-   game.h,
-   true
-  );
- }
-
-}
-
-function loop(time){
-
- raf=0;
-
- const dt=Math.min((time-lastTime)/1000,.04);
-
- lastTime=time;
-
- update(dt);
- draw();
-
- if(state==="playing"){
-
-  raf=requestAnimationFrame(loop);
- }
+    if(!animationId){
+        animationId = requestAnimationFrame(gameLoop);
+    }
 }
 
 function pauseGame(){
-
- if(state!=="playing")return;
-
- state="paused";
-
- showPanel("pause");
+    if(state !== "playing") return;
+    state = "paused";
+    clearInput();
+    $("hud").classList.add("hidden");
+    $("controls").classList.add("hidden");
+    $("pauseBtn").classList.add("hidden");
+    showPanel("pausePanel");
 }
 
 function resumeGame(){
+    if(state !== "paused") return;
+    state = "playing";
+    clearInput();
 
- if(state!=="paused")return;
+    $("hud").classList.remove("hidden");
+    $("controls").classList.remove("hidden");
+    $("pauseBtn").classList.remove("hidden");
 
- state="playing";
+    hideOverlay();
+    lastTime = performance.now();
 
- hidePanel();
-
- lastTime=performance.now();
-
- if(!raf)raf=requestAnimationFrame(loop);
+    if(!animationId){
+        animationId = requestAnimationFrame(gameLoop);
+    }
 }
 
-function goHome(){
+function endGame(){
+    if(state !== "playing") return;
 
- state="menu";
+    state = "over";
+    clearInput();
 
- $("hud").classList.add("hidden");
- $("controls").classList.add("hidden");
+    const final = Math.floor(score);
 
- updateMenu();
- showPanel("menu");
+    if(final > best){
+        best = final;
+        localStorage.setItem("hwta_best",String(best));
+    }
 
- draw();
+    bank += runCoins;
+    localStorage.setItem("hwta_bank",String(bank));
+
+    $("hud").classList.add("hidden");
+    $("controls").classList.add("hidden");
+    $("pauseBtn").classList.add("hidden");
+
+    $("finalScore").textContent = final;
+    $("finalCoins").textContent = runCoins;
+
+    updateMenuStats();
+    showPanel("overPanel");
 }
 
+/* =========================
+   رسم الطريق
+========================= */
 
-// التحكم باللمس
-
-function bindButton(id,key){
-
- const btn=$(id);
-
- const down=e=>{
-  e.preventDefault();
-  keys[key]=true;
-  btn.classList.add("pressed");
- };
-
- const up=e=>{
-  e.preventDefault();
-  keys[key]=false;
-  btn.classList.remove("pressed");
- };
-
- btn.addEventListener("pointerdown",down);
- btn.addEventListener("pointerup",up);
- btn.addEventListener("pointercancel",up);
- btn.addEventListener("pointerleave",up);
+function roundedRect(x,y,w,h,r,color){
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+    ctx.fill();
 }
 
-bindButton("left","left");
-bindButton("right","right");
-bindButton("gas","gas");
-bindButton("brake","brake");
+function drawBackground(){
+    ctx.fillStyle = "#183c2a";
+    ctx.fillRect(0,0,W,H);
 
+    const stripe = 70;
+    for(let y = -stripe; y < H + stripe; y += stripe){
+        const yy = (y + roadOffset * 0.35) % (H + stripe);
+        ctx.fillStyle = "#214b32";
+        ctx.fillRect(0,yy,W,25);
+    }
+}
 
-// التحكم بلوحة المفاتيح
+function drawRoad(){
+    const x = road.x;
+    const w = road.width;
 
+    ctx.fillStyle = "#111820";
+    ctx.fillRect(x-10,0,w+20,H);
+
+    ctx.fillStyle = "#303943";
+    ctx.fillRect(x,0,w,H);
+
+    ctx.fillStyle = "#e8e8e8";
+    ctx.fillRect(x+4,0,4,H);
+    ctx.fillRect(x+w-8,0,4,H);
+
+    for(let lane=1;lane<=2;lane++){
+        const lx = x + road.laneWidth * lane;
+
+        for(let y=-65;y<H+65;y+=100){
+            const yy = (y + roadOffset) % (H+100);
+            ctx.fillStyle = "#c5cbd0";
+            ctx.fillRect(lx-2,yy,4,48);
+        }
+    }
+
+    ctx.fillStyle = "#222b35";
+    ctx.fillRect(x-10,0,7,H);
+    ctx.fillRect(x+w+3,0,7,H);
+}
+
+/* =========================
+   رسم السيارات
+========================= */
+
+function drawCar(x,y,w,h,color,isPlayer=false,tilt=0){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(tilt);
+
+    // ظل السيارة
+    ctx.fillStyle = "#0008";
+    roundedRect(-w/2+3,-h/2+5,w,h,10,"#0007");
+
+    // العجلات
+    ctx.fillStyle = "#090d12";
+    roundedRect(-w/2-4,-h/2+13,8,19,3,"#090d12");
+    roundedRect(w/2-4,-h/2+13,8,19,3,"#090d12");
+    roundedRect(-w/2-4,h/2-32,8,19,3,"#090d12");
+    roundedRect(w/2-4,h/2-32,8,19,3,"#090d12");
+
+    // جسم السيارة
+    roundedRect(-w/2,-h/2,w,h,11,color);
+
+    // الزجاج الأمامي
+    roundedRect(-w*0.34,-h*0.25,w*0.68,h*0.27,7,"#172e42");
+
+    // الزجاج الخلفي
+    roundedRect(-w*0.31,h*0.12,w*0.62,h*0.18,6,"#20394c");
+
+    // السقف
+    roundedRect(-w*0.34,-h*0.02,w*0.68,h*0.25,5,color);
+
+    // المصابيح الأمامية
+    ctx.fillStyle = "#fff7c5";
+    ctx.fillRect(-w*0.36,-h/2+3,w*0.22,5);
+    ctx.fillRect(w*0.14,-h/2+3,w*0.22,5);
+
+    // المصابيح الخلفية
+    ctx.fillStyle = "#ff3030";
+    ctx.fillRect(-w*0.36,h/2-7,w*0.22,5);
+    ctx.fillRect(w*0.14,h/2-7,w*0.22,5);
+
+    if(isPlayer){
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-2,-h*0.13,4,h*0.22);
+    }
+
+    ctx.restore();
+}
+
+/* =========================
+   حركة السيارات والعملات
+========================= */
+
+function spawnTraffic(){
+    const lane = Math.floor(Math.random()*3);
+    const x = road.x + road.laneWidth*(lane+0.5);
+
+    const colors = ["#168cff","#e74c3c","#f4b942","#9b72cf","#eeeeee","#20b77a"];
+
+    traffic.push({
+        x,
+        y:-100,
+        width:player.width,
+        height:player.height*1.65,
+        color:colors[Math.floor(Math.random()*colors.length)],
+        speed:Math.random()*55+35
+    });
+}
+
+function spawnCoin(){
+    const lane = Math.floor(Math.random()*3);
+    pickups.push({
+        x:road.x+road.laneWidth*(lane+0.5),
+        y:-35,
+        radius:12,
+        taken:false
+    });
+}
+
+function updateGame(dt){
+    const acceleration = input.gas ? 105 : 0;
+    const braking = input.brake ? 150 : 0;
+
+    speed += acceleration*dt;
+    speed -= braking*dt;
+
+    if(!input.gas && !input.brake){
+        speed += (65-speed)*dt*0.15;
+    }
+
+    speed = Math.max(25,Math.min(150,speed));
+
+    const moveSpeed = 270 + speed*1.35;
+
+    let direction = 0;
+    if(input.left) direction -= 1;
+    if(input.right) direction += 1;
+
+    player.x += direction*moveSpeed*dt;
+    player.tilt += (direction*0.16-player.tilt)*Math.min(1,dt*9);
+
+    const minX = road.x + player.width/2 + 12;
+    const maxX = road.x + road.width - player.width/2 - 12;
+
+    player.x = Math.max(minX,Math.min(maxX,player.x));
+
+    roadOffset += (speed*2.4)*dt;
+    if(roadOffset > 100) roadOffset %= 100;
+
+    score += speed*dt*0.16;
+
+    spawnTimer -= dt;
+    if(spawnTimer <= 0){
+        spawnTraffic();
+        spawnTimer = Math.max(0.48,1.35-(speed/180));
+    }
+
+    coinTimer -= dt;
+    if(coinTimer <= 0){
+        spawnCoin();
+        coinTimer = 1.6 + Math.random()*1.1;
+    }
+
+    for(let i=traffic.length-1;i>=0;i--){
+        const car = traffic[i];
+        car.y += (moveSpeed*0.55+car.speed)*dt;
+
+        const dx = Math.abs(player.x-car.x);
+        const dy = Math.abs(player.y-car.y);
+
+        if(dx < (player.width+car.width)*0.39 &&
+           dy < (player.height+car.height)*0.38){
+            endGame();
+            return;
+        }
+
+        if(car.y > H+120){
+            traffic.splice(i,1);
+            score += 5;
+        }
+    }
+
+    for(let i=pickups.length-1;i>=0;i--){
+        const coin = pickups[i];
+        coin.y += moveSpeed*0.62*dt;
+
+        const dx = player.x-coin.x;
+        const dy = player.y-coin.y;
+
+        if(Math.hypot(dx,dy) < player.width*0.75+coin.radius){
+            runCoins++;
+            score += 25;
+            pickups.splice(i,1);
+            updateHUD();
+            continue;
+        }
+
+        if(coin.y > H+40) pickups.splice(i,1);
+    }
+
+    updateHUD();
+}
+
+/* =========================
+   رسم العملات
+========================= */
+
+function drawCoin(coin){
+    ctx.save();
+    ctx.translate(coin.x,coin.y);
+
+    ctx.beginPath();
+    ctx.arc(0,0,coin.radius,0,Math.PI*2);
+    ctx.fillStyle = "#ffca28";
+    ctx.fill();
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#fff0a0";
+    ctx.stroke();
+
+    ctx.fillStyle = "#9b6500";
+    ctx.font = "bold 15px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("$",0,1);
+
+    ctx.restore();
+}
+
+/* =========================
+   عرض اللعبة
+========================= */
+
+function render(){
+    drawBackground();
+    drawRoad();
+
+    for(const coin of pickups) drawCoin(coin);
+
+    for(const car of traffic){
+        drawCar(car.x,car.y,car.width,car.height,car.color,false,0);
+    }
+
+    if(state === "playing" || state === "paused"){
+        drawCar(
+            player.x,
+            player.y,
+            player.width,
+            player.height,
+            cars[selectedCar].color,
+            true,
+            player.tilt
+        );
+    }
+}
+
+/* =========================
+   حلقة التشغيل
+========================= */
+
+function gameLoop(time){
+    animationId = 0;
+
+    if(state !== "playing"){
+        render();
+        return;
+    }
+
+    const dt = Math.min((time-lastTime)/1000,0.035);
+    lastTime = time;
+
+    updateGame(dt);
+    render();
+
+    if(state === "playing"){
+        animationId = requestAnimationFrame(gameLoop);
+    }
+}
+
+/* =========================
+   التحكم باللمس والكيبورد
+========================= */
+
+function bindHold(buttonId,key){
+    const button = $(buttonId);
+
+    const down = event=>{
+        event.preventDefault();
+        input[key] = true;
+                button.classList.add("active");
+        try{
+            button.setPointerCapture(event.pointerId);
+        }catch(e){}
+    };
+
+    const up = event=>{
+        event.preventDefault();
+        input[key] = false;
+        button.classList.remove("active");
+    };
+
+    button.addEventListener("pointerdown",down);
+    button.addEventListener("pointerup",up);
+    button.addEventListener("pointercancel",up);
+    button.addEventListener("lostpointercapture",up);
+    button.addEventListener("contextmenu",e=>e.preventDefault());
+}
+
+bindHold("leftBtn","left");
+bindHold("rightBtn","right");
+bindHold("gasBtn","gas");
+bindHold("brakeBtn","brake");
+
+/* التحكم بلوحة المفاتيح */
 window.addEventListener("keydown",e=>{
+    if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")
+        input.left=true;
 
- if(e.key==="ArrowLeft"||e.key==="a")keys.left=true;
- if(e.key==="ArrowRight"||e.key==="d")keys.right=true;
- if(e.key==="ArrowUp"||e.key==="w")keys.gas=true;
- if(e.key==="ArrowDown"||e.key==="s")keys.brake=true;
+    if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")
+        input.right=true;
 
- if(e.key==="Escape"){
+    if(e.key==="ArrowUp" || e.key.toLowerCase()==="w")
+        input.gas=true;
 
-  if(state==="playing")pauseGame();
-  else if(state==="paused")resumeGame();
- }
+    if(e.key==="ArrowDown" || e.key.toLowerCase()==="s")
+        input.brake=true;
+
+    if(e.key==="Escape" && state==="playing")
+        pauseGame();
 });
 
 window.addEventListener("keyup",e=>{
+    if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")
+        input.left=false;
 
- if(e.key==="ArrowLeft"||e.key==="a")keys.left=false;
- if(e.key==="ArrowRight"||e.key==="d")keys.right=false;
- if(e.key==="ArrowUp"||e.key==="w")keys.gas=false;
- if(e.key==="ArrowDown"||e.key==="s")keys.brake=false;
+    if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")
+        input.right=false;
+
+    if(e.key==="ArrowUp" || e.key.toLowerCase()==="w")
+        input.gas=false;
+
+    if(e.key==="ArrowDown" || e.key.toLowerCase()==="s")
+        input.brake=false;
 });
 
+window.addEventListener("blur",clearInput);
 
-// اختيار السيارة
+/* أزرار القوائم */
+$("startBtn").addEventListener("click",startGame);
+$("restartBtn").addEventListener("click",startGame);
 
-document.querySelectorAll(".carChoice").forEach(btn=>{
-
- btn.addEventListener("click",()=>{
-
-  selectedCar=Number(btn.dataset.car);
-
-  document.querySelectorAll(".carChoice").forEach(b=>{
-   b.classList.remove("active");
-  });
-
-  btn.classList.add("active");
- });
+$("changeCar").addEventListener("click",()=>{
+    selectedCar=(selectedCar+1)%cars.length;
+    updateMenuStats();
 });
 
+$("pauseBtn").addEventListener("click",pauseGame);
+$("resumeBtn").addEventListener("click",resumeGame);
 
-// الأزرار الرئيسية
+$("quitBtn").addEventListener("click",()=>{
+    state="menu";
+    clearInput();
 
-$("start").onclick=startGame;
-$("again").onclick=startGame;
-$("restart").onclick=startGame;
-$("resume").onclick=resumeGame;
-$("home").onclick=goHome;
-$("mainMenu").onclick=goHome;
+    $("hud").classList.add("hidden");
+    $("controls").classList.add("hidden");
+    $("pauseBtn").classList.add("hidden");
 
-updateMenu();
-showPanel("menu");
-draw();
+    updateMenuStats();
+    showPanel("mainPanel");
+});
 
-})();
+$("homeBtn").addEventListener("click",()=>{
+    state="menu";
+    clearInput();
+
+    $("hud").classList.add("hidden");
+    $("controls").classList.add("hidden");
+    $("pauseBtn").classList.add("hidden");
+
+    updateMenuStats();
+    showPanel("mainPanel");
+});
+
+/* منع سلوك المتصفح المزعج */
+document.addEventListener("contextmenu",e=>{
+    e.preventDefault();
+});
+
+document.addEventListener("selectstart",e=>{
+    e.preventDefault();
+});
+
+/* التشغيل الأولي */
+updateMenuStats();
+render();
+
 </script>
 </body>
-  </html>
+</html>
